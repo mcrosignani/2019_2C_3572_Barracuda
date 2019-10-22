@@ -17,9 +17,11 @@ namespace TGC.Group.Model
 
         public override void Init()
         {
-            currentLevel = new Level1Model(Camara, Input, MediaDir, Frustum);
+            currentLevel = new Level1Model(Camara, Input, MediaDir, ShadersDir, Frustum);
 
             currentLevel.Init();
+
+            currentLevel.DrawText = DrawText;
 
             Camara = currentLevel.Camera;
 
