@@ -106,11 +106,18 @@
     </Compile>
     <Compile Include="Helpers\HeightmapHelper.cs" />
     <Compile Include="Helpers\TextureHelper.cs" />
+    <Compile Include="Model\HUDModel.cs" />
+    <Compile Include="Model\ItemModel.cs" />
     <Compile Include="Model\Levels\Level1Model.cs" />
     <Compile Include="Model\Levels\LevelModel.cs" />
+    <Compile Include="Model\PlayerModel.cs" />
     <Compile Include="Model\UnderseaModel.cs" />
+    <Compile Include="Physics\BulletSharpManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sprites\CustomBitmap.cs" />
+    <Compile Include="Sprites\CustomSprite.cs" />
+    <Compile Include="Sprites\Drawer2D.cs" />
     <EmbeddedResource Include="Form\GameForm.resx">
       <DependentUpon>GameForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -129,12 +136,16 @@
       <LastGenOutput>Game.Designer.cs</LastGenOutput>
     </None>
     <None Include="Media\Meshes\arbusto\Arbusto.max" />
-    <None Include="Media\Meshes\esqueletohumano\Esqueleto3.max" />
+    <None Include="Media\Meshes\esqueletohumano2\Esqueleto2.max" />
+    <None Include="Media\Meshes\esqueletohumano3\Esqueleto3.max" />
+    <None Include="Media\Meshes\esqueletohumano\Esqueleto.max" />
     <None Include="Media\Meshes\rock\Roca.max" />
     <None Include="Media\Meshes\sogaenrollada\SogaEnrollada.max" />
+    <None Include="Media\Meshes\timon\Timon.max" />
     <None Include="Media\Meshes\tubometalcurvo\TuboMetal.max" />
     <None Include="Media\Meshes\tubometalrecto\TuboMetal2.max" />
     <None Include="Media\Meshes\valvula\ValvulaMetal.max" />
+    <None Include="Media\Meshes\workbench\Workbench.max" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -145,30 +156,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Shaders\TgcKeyFrameMeshShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\TgcMeshPhongShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\TgcMeshPointLightShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\TgcMeshShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\TgcMeshSpotLightShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\TgcSkeletalMeshPointLightShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\TgcSkeletalMeshShader.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\Varios.fx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -187,7 +174,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Media\Level1\Heigthmap\hm_level1.jpg" />
+    <Content Include="Media\Level1\Textures\healthBar.png" />
+    <Content Include="Media\Level1\Textures\mask.png" />
+    <Content Include="Media\Level1\Textures\noteTexture.png" />
+    <Content Include="Media\Level1\Textures\oxygenBar.png" />
     <Content Include="Media\Level1\Textures\surface.PNG" />
+    <Content Include="Media\Level1\Textures\tomasFace.png" />
     <Content Include="Media\Meshes\arbusto\Arbusto-TgcScene.xml" />
     <Content Include="Media\Meshes\arbusto\preview.jpg" />
     <Content Include="Media\Meshes\arbusto\Textures\Arbusto.png" />
@@ -214,7 +206,13 @@
     <Content Include="Media\Meshes\coral\Textures\red.jpg" />
     <Content Include="Media\Meshes\coral\Textures\shell_basecolour.jpg" />
     <Content Include="Media\Meshes\coral\Textures\shell_roughness.png" />
-    <Content Include="Media\Meshes\esqueletohumano\Esqueleto3-TgcScene.xml" />
+    <Content Include="Media\Meshes\esqueletohumano2\Esqueleto2-TgcScene.xml" />
+    <Content Include="Media\Meshes\esqueletohumano2\preview.jpg" />
+    <Content Include="Media\Meshes\esqueletohumano2\Textures\skeleton.png" />
+    <Content Include="Media\Meshes\esqueletohumano3\Esqueleto3-TgcScene.xml" />
+    <Content Include="Media\Meshes\esqueletohumano3\preview.jpg" />
+    <Content Include="Media\Meshes\esqueletohumano3\Textures\skeleton.png" />
+    <Content Include="Media\Meshes\esqueletohumano\Esqueleto-TgcScene.xml" />
     <Content Include="Media\Meshes\esqueletohumano\preview.jpg" />
     <Content Include="Media\Meshes\esqueletohumano\Textures\skeleton.png" />
     <Content Include="Media\Meshes\fish\fish-TgcScene.xml" />
@@ -271,12 +269,25 @@
     <Content Include="Media\Meshes\ship\Textures\shell_roughness.png" />
     <Content Include="Media\Meshes\sogaenrollada\SogaEnrollada-TgcScene.xml" />
     <Content Include="Media\Meshes\sogaenrollada\Textures\rope.jpg" />
+    <Content Include="Media\Meshes\timon\Textures\steerwheel.jpg" />
+    <Content Include="Media\Meshes\timon\Timon-TgcScene.xml" />
     <Content Include="Media\Meshes\tubometalcurvo\Textures\auvBG.png" />
     <Content Include="Media\Meshes\tubometalcurvo\TuboMetal-TgcScene.xml" />
     <Content Include="Media\Meshes\tubometalrecto\Textures\auvBG.png" />
     <Content Include="Media\Meshes\tubometalrecto\TuboMetal2-TgcScene.xml" />
     <Content Include="Media\Meshes\valvula\Textures\auvBG.png" />
     <Content Include="Media\Meshes\valvula\ValvulaMetal-TgcScene.xml" />
+    <Content Include="Media\Meshes\workbench\Textures\bank.bmp" />
+    <Content Include="Media\Meshes\workbench\Workbench-TgcScene.xml" />
+    <Content Include="Shaders\PostProcess.fx" />
+    <Content Include="Shaders\TgcKeyFrameMeshShader.fx" />
+    <Content Include="Shaders\TgcMeshPhongShader.fx" />
+    <Content Include="Shaders\TgcMeshPointLightShader.fx" />
+    <Content Include="Shaders\TgcMeshShader.fx" />
+    <Content Include="Shaders\TgcMeshSpotLightShader.fx" />
+    <Content Include="Shaders\TgcSkeletalMeshPointLightShader.fx" />
+    <Content Include="Shaders\TgcSkeletalMeshShader.fx" />
+    <Content Include="Shaders\Varios.fx" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -291,6 +302,11 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\BulletSharp.0.11.1\build\net40-client\BulletSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BulletSharp.0.11.1\build\net40-client\BulletSharp.targets'))" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>cd $(OutDir)
+del libbulletc.dll
+rename libbulletc-windows-x86.dll libbulletc.dll</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
