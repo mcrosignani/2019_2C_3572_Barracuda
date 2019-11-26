@@ -13,5 +13,10 @@ Trabajo practico para TAGC 2do cuatrimestre 2019
 Crosignani, Mauro
 
 ## ScreenShot ##
+![Alt text](samples/main.png?raw=true "Main")
+
+![Alt text](samples/boat.png?raw=true "Boat")
+
+![Alt text](samples/water.png?raw=true "Water")
 
 ## Game Play ##

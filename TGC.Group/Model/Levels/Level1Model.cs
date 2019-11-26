@@ -4,15 +4,18 @@ using Microsoft.DirectX.DirectInput;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using TGC.Core.BoundingVolumes;
 using TGC.Core.BulletPhysics;
 using TGC.Core.Camara;
 using TGC.Core.Collision;
 using TGC.Core.Direct3D;
+using TGC.Core.Example;
 using TGC.Core.Geometry;
 using TGC.Core.Input;
 using TGC.Core.Mathematica;
 using TGC.Core.SceneLoader;
+using TGC.Core.Shaders;
 using TGC.Core.Terrain;
 using TGC.Core.Text;
 using TGC.Core.Textures;
@@ -25,14 +28,8 @@ using Effect = Microsoft.DirectX.Direct3D.Effect;
 
 namespace TGC.Group.Model.Levels
 {
-    public class Level1Model : LevelModel
+    public class Level1Model : CustomModel
     {
-        public TgcCamera Camera;
-        private TgcD3dInput Input;
-        private string MediaDir;
-        private string ShadersDir;
-        TgcFrustum Frustum;
-
         private float time;
         private string currentHeightmap;
         private float currentScaleXZ;
@@ -43,13 +40,16 @@ namespace TGC.Group.Model.Levels
         //private HeightmapModel hmModel;
         private TgcSkyBox skyBox;
         private TgcSkyBox skyBoxUndersea;
-        private TgcPlane surfacePlane;
+        private TgcSimpleTerrain surfacePlane;
         private TGCVector3 surfacePosition = new TGCVector3(0, 4000, 0);
         //private CollisionManager collisionManager;
         TgcSimpleTerrain underseaTerrain;
         private Surface g_pDepthStencil;
         private Texture g_pRenderTarget;
         private VertexBuffer g_pVBV3D;
+
+        private Effect wavesEffect;
+        private Effect recoltableItemEffect;
 
         //HUD
         HUDModel hudModel;
@@ -63,16 +63,9 @@ namespace TGC.Group.Model.Levels
         // Player
         PlayerModel playerModel;
 
-        public TgcText2D DrawText { get; set; }
-
-        public Level1Model(TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum)
+        public Level1Model(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
+            : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
-            Camera = camera;
-            Input = input;
-            MediaDir = mediaDir;
-            ShadersDir = shadersDir;
-            Frustum = frustum;
-
             hudModel = new HUDModel(MediaDir, D3DDevice.Instance.Device);
         }
 
@@ -132,10 +125,38 @@ namespace TGC.Group.Model.Levels
         {
             collectableMeshes = new List<ItemModel>();
 
+            LoadMask();
             LoadFatherNote();
             LoadRope();
             LoadWood();
             LoadCopper();
+        }
+
+        private void LoadMask()
+        {
+            recoltableItemEffect = TGCShaders.Instance.LoadEffect(ShadersDir + "\\RecolectableItemShader.fx");
+            recoltableItemEffect.Technique = "RecolectableItemTechnique";
+
+            string pathMask = MediaDir + "\\Meshes\\mask\\mask_floor-TgcScene.xml";
+
+            var loader = new TgcSceneLoader();
+            var meshes = loader.loadSceneFromFile(pathMask).Meshes;
+
+            int i = 0;
+            foreach (var mesh in meshes)
+            {
+                mesh.Position = new TGCVector3(6939, 4105, 6585);
+                mesh.Scale = new TGCVector3(1f, 1f, 1f);
+                mesh.Rotation = new TGCVector3(0, 90, 0);
+
+                mesh.Effect = recoltableItemEffect;
+                mesh.Technique = "RecolectableItemTechnique";
+
+                mesh.Name = "mask_floor_" + i.ToString();
+                i++;
+
+                collectableMeshes.Add(new ItemModel { Mesh = mesh, IsCollectable = true });
+            }
         }
 
         private void LoadCopper()
@@ -196,7 +217,7 @@ namespace TGC.Group.Model.Levels
                 throw new Exception("Error al cargar shader. Errores: " + compilationErrors);
             }
             //Configurar Technique dentro del shader
-            effect.Technique = "DefaultTechnique";
+            effect.Technique = "PostProcess";
 
             g_pDepthStencil = d3dDevice.CreateDepthStencilSurface(d3dDevice.PresentationParameters.BackBufferWidth,
                 d3dDevice.PresentationParameters.BackBufferHeight,
@@ -233,7 +254,18 @@ namespace TGC.Group.Model.Levels
         private void LoadSurface()
         {
             var surfaceTexture = TgcTexture.createTexture(D3DDevice.Instance.Device, MediaDir + "\\Level1\\Textures\\" + "surface.PNG");
-            surfacePlane = new TgcPlane(surfacePosition, new TGCVector3(12800, 0f, 12800), TgcPlane.Orientations.XZplane, surfaceTexture);
+            //surfacePlane = new TgcPlane(surfacePosition, new TGCVector3(12800, 0f, 12800), TgcPlane.Orientations.XZplane, surfaceTexture);
+
+            surfacePlane = new TgcSimpleTerrain();
+            surfacePlane.loadHeightmap(MediaDir + "Level1\\Heigthmap\\heighmapmar2.jpg", 1000, 1, new TGCVector3(0, 3850, 0));
+            surfacePlane.loadTexture(MediaDir + "\\Level1\\Textures\\" + "surface.PNG");
+            surfacePlane.AlphaBlendEnable = true;
+
+            wavesEffect = TGCShaders.Instance.LoadEffect(ShadersDir + "\\Waves2.fx");
+            wavesEffect.Technique = "WavesScene";
+
+            surfacePlane.Effect = wavesEffect;
+            surfacePlane.Technique = "WavesScene";
         }
 
         private void LoadSkyBox()
@@ -350,7 +382,7 @@ namespace TGC.Group.Model.Levels
             var originalMesh = loader.loadSceneFromFile(pathWorkbench).Meshes[0];
 
             var position = new TGCVector3(6900, 4070, 7050);
-            var scale = new TGCVector3(0.5f, 0.2f, 0.5f);
+            var scale = new TGCVector3(0.2f, 0.1f, 0.2f);
 
             originalMesh.Position = position;
             originalMesh.Scale = scale;
@@ -420,6 +452,9 @@ namespace TGC.Group.Model.Levels
 
         private void LoadFishes()
         {
+            var redFishesEffect = TGCShaders.Instance.LoadEffect(ShadersDir + "\\RedFishes.fx");
+            redFishesEffect.Technique = "RedFishesTechnique";
+
             var rnd = new Random();
             string pathFish = MediaDir + "\\Meshes\\fish\\fish-TgcScene.xml";
 
@@ -428,7 +463,7 @@ namespace TGC.Group.Model.Levels
 
             var xMax = 12000f;
             var zMax = 12000f;
-            var yMax = 2000f;
+            var yMax = 1500f;
             var cant = 100;
 
             for (int i = 0; i < cant; i++)
@@ -443,6 +478,9 @@ namespace TGC.Group.Model.Levels
                 var fish = originalMesh.createMeshInstance(originalMesh.Name + $"_{i}");
 
                 fish.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
+
+                fish.Effect = redFishesEffect;
+                fish.Technique = "RedFishesTechnique";
 
                 meshes.Add(new ItemModel { Mesh = fish });
             }
@@ -506,6 +544,19 @@ namespace TGC.Group.Model.Levels
             bulletManager.Update(elapsedTime);
 
             //skyBox.Center = playerModel.Position;
+
+            if (Input.keyPressed(Key.E))
+            {
+                playerModel.WithoutHelmet = false;
+
+                collectableMeshes
+                    .Where(item => item.Mesh.Name.Contains("mask_floor"))
+                    .ToList()
+                    .ForEach(item => item.Mesh.Enabled = false);
+            }
+
+            effect.SetValue("withoutHelmet", playerModel.WithoutHelmet);
+            effect.SetValue("inWater", playerModel.UnderSurface());
         }
 
         public override void Render(float elapsedTime)
@@ -527,7 +578,10 @@ namespace TGC.Group.Model.Levels
 
             time += elapsedTime;
 
-            effect.Technique = "DefaultTechnique";
+            wavesEffect.SetValue("time", time);
+            recoltableItemEffect.SetValue("time", time);
+
+            //effect.Technique = "DefaultTechnique";
 
             playerModel.Render();
             bulletManager.Render();
@@ -600,6 +654,8 @@ namespace TGC.Group.Model.Levels
         public override void Dispose()
         {
             effect.Dispose();
+            recoltableItemEffect.Dispose();
+            wavesEffect.Dispose();
             playerModel.Dispose();
             bulletManager.Dispose();
             skyBox.Dispose();
