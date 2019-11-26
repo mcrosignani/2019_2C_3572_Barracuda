@@ -12,11 +12,13 @@ namespace TGC.Group.Model
         private float surfaceYPosition;
 
         public TGCVector3 Position { get; set; }
+        public bool WithoutHelmet { get; set; }
 
         public PlayerModel(float surfacePosition, TGCVector3 initialPosition)
         {
             surfaceYPosition = surfacePosition;
             Position = initialPosition;
+            WithoutHelmet = true;
         }
 
         public void Init()

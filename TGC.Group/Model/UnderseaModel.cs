@@ -6,7 +6,7 @@ namespace TGC.Group.Model
 {
     public class UnderseaModel : TgcExample
     {
-        private Level1Model currentLevel;
+        private CustomModel currentModel;
 
         public UnderseaModel(string mediaDir, string shadersDir) : base(mediaDir, shadersDir)
         {
@@ -17,13 +17,11 @@ namespace TGC.Group.Model
 
         public override void Init()
         {
-            currentLevel = new Level1Model(Camara, Input, MediaDir, ShadersDir, Frustum);
+            currentModel = new MainMenuModel(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
 
-            currentLevel.Init();
+            currentModel.Init();
 
-            currentLevel.DrawText = DrawText;
-
-            Camara = currentLevel.Camera;
+            Camara = currentModel.Camera;
 
             BackgroundColor = Color.Black;
         }
@@ -32,7 +30,7 @@ namespace TGC.Group.Model
         {
             PreUpdate();
 
-            currentLevel.Update(ElapsedTime);
+            currentModel.Update(ElapsedTime);
 
             PostUpdate();
         }
@@ -41,14 +39,23 @@ namespace TGC.Group.Model
         {
             PreRender();
 
-            currentLevel.Render(ElapsedTime);
+            currentModel.Render(ElapsedTime);
 
             PostRender();
         }
 
         public override void Dispose()
         {
-            currentLevel.Dispose();
+            currentModel.Dispose();
+        }
+
+        public void ChangeLevel()
+        {
+            currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
+
+            currentModel.Init();
+
+            Camara = currentModel.Camera;
         }
     }
 }

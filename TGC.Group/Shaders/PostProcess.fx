@@ -17,7 +17,6 @@ sampler2D diffuseMap = sampler_state
 };
 
 texture texCasco;
-
 sampler2D cascoMap = sampler_state
 {
 	Texture = (texCasco);
@@ -27,16 +26,7 @@ sampler2D cascoMap = sampler_state
 	MAGFILTER = LINEAR;
 	MIPFILTER = LINEAR;
 };
-//----------------------
-float alarmaScaleFactor = 0.1;
 
-//Textura alarma
-texture textura_alarma;
-sampler sampler_alarma = sampler_state
-{
-    Texture = (textura_alarma);
-};
-//-----------------
 float screen_dx;					// tamaño de la pantalla en pixels
 float screen_dy;
 float time;
@@ -70,49 +60,44 @@ struct VS_OUTPUT
     float3 Normal :          TEXCOORD1; // Normales
 };
 
-//Vertex Shader
-VS_OUTPUT vs_main(VS_INPUT Input)
-{
-	VS_OUTPUT Output;
-    Output.Position = mul(Input.Position, matWorldViewProj);
-    Output.Normal = Input.Normal;
-    Output.Texcoord = Input.Texcoord;
-	return(Output);
-}
-
-//Pixel Shader
-float4 ps_main(float2 Texcoord: TEXCOORD0, float3 N : TEXCOORD1,
-	float3 Pos : TEXCOORD2) : COLOR0
-{
-	//Obtener el texel de textura
-	float4 fvBaseColor = tex2D(diffuseMap, Texcoord);
-	return fvBaseColor;
-}
-
-technique DefaultTechnique
-{
-	pass Pass_0
-	{
-		VertexShader = compile vs_3_0 vs_main();
-		PixelShader = compile ps_3_0 ps_main();
-	}
-}
-
-void VSCopy(float4 vPos : POSITION, float2 vTex : TEXCOORD0, out float4 oPos : POSITION, out float2 oScreenPos : TEXCOORD0)
+void vs_main(float4 vPos : POSITION, float2 vTex : TEXCOORD0, out float4 oPos : POSITION, out float2 oScreenPos : TEXCOORD0)
 {
 	oPos = vPos;
 	oScreenPos = vTex;
 	oPos.w = 1;
 }
-float r=25;
-float c=10;
-float4 PSPostProcess(in float2 Tex : TEXCOORD0, in float2 vpos : VPOS) : COLOR0
+
+float Frequency = 10;
+float Phase = 0;
+float Amplitude = 0.1;
+bool withoutHelmet = true;
+bool inWater = false;
+float4 ps_main(in float2 Tex : TEXCOORD0, in float2 vpos : VPOS) : COLOR0
 {	
-	float4 texelCasco=tex2D(cascoMap, Tex);
-	if(texelCasco.a<1){
-    return tex2D(RenderTarget, Tex);
-	}else{
-	return texelCasco;//float4(1,0,0,1);
+	//Move to another affect
+	float2 cord = Tex;
+	if (withoutHelmet)
+	{
+		if (inWater)
+		{
+			cord.x += sin(cord.y * Frequency + Phase + time) * Amplitude;
+		}
+
+		return tex2D(RenderTarget, cord);
+	}
+	else
+	{
+		float4 texelCasco = tex2D(cascoMap, cord);
+		if (texelCasco.a < 1)
+		{
+			//All pixels with transparency. Middle of helmet
+			return tex2D(RenderTarget, cord);
+		}
+		else
+		{
+			//Helmet texture
+			return texelCasco;
+		}
 	}
 }
 
@@ -120,32 +105,7 @@ technique PostProcess
 {
 	pass Pass_0
 	{
-		VertexShader = compile vs_3_0 VSCopy();
-		PixelShader = compile ps_3_0 PSPostProcess();
-	}
-}
-
-float4 PSPostProcess2(in float2 Tex : TEXCOORD0, in float2 vpos : VPOS) : COLOR0
-{	
-	float4 color1;
-	//Obtener color de textura de alarma, escalado por un factor
-    float4 color2 = tex2D(sampler_alarma, Tex) * alarmaScaleFactor;
-
-	float4 texelCasco=tex2D(cascoMap, Tex);
-	
-	if(texelCasco.a<1){
-    color1= tex2D(RenderTarget, Tex);
-	}else{
-	color1= texelCasco;//float4(1,0,0,1);
-	}
-	return color1+color2;
-}
-
-technique PostProcess2
-{
-	pass Pass_0
-	{
-		VertexShader = compile vs_3_0 VSCopy();
-		PixelShader = compile ps_3_0 PSPostProcess2();
+		VertexShader = compile vs_3_0 vs_main();
+		PixelShader = compile ps_3_0 ps_main();
 	}
 }

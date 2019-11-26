@@ -92,7 +92,10 @@
   <ItemGroup>
     <Compile Include="Camera\FpsCamera.cs" />
     <Compile Include="Collision\CollisionManager.cs" />
+    <Compile Include="Entities\GUI.cs" />
+    <Compile Include="Entities\GUIItem.cs" />
     <Compile Include="Entities\HeightmapModel.cs" />
+    <Compile Include="Entities\Plane.cs" />
     <Compile Include="Form\GameForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +113,7 @@
     <Compile Include="Model\ItemModel.cs" />
     <Compile Include="Model\Levels\Level1Model.cs" />
     <Compile Include="Model\Levels\LevelModel.cs" />
+    <Compile Include="Model\MainMenuModel.cs" />
     <Compile Include="Model\PlayerModel.cs" />
     <Compile Include="Model\UnderseaModel.cs" />
     <Compile Include="Physics\BulletSharpManager.cs" />
@@ -173,6 +177,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Media\Level1\Heigthmap\heighmapmar2.jpg" />
     <Content Include="Media\Level1\Heigthmap\hm_level1.jpg" />
     <Content Include="Media\Level1\Textures\healthBar.png" />
     <Content Include="Media\Level1\Textures\mask.png" />
@@ -279,7 +284,10 @@
     <Content Include="Media\Meshes\valvula\ValvulaMetal-TgcScene.xml" />
     <Content Include="Media\Meshes\workbench\Textures\bank.bmp" />
     <Content Include="Media\Meshes\workbench\Workbench-TgcScene.xml" />
+    <Content Include="Shaders\BasicShader.fx" />
     <Content Include="Shaders\PostProcess.fx" />
+    <Content Include="Shaders\RecolectableItemShader.fx" />
+    <Content Include="Shaders\RedFishes.fx" />
     <Content Include="Shaders\TgcKeyFrameMeshShader.fx" />
     <Content Include="Shaders\TgcMeshPhongShader.fx" />
     <Content Include="Shaders\TgcMeshPointLightShader.fx" />
@@ -288,6 +296,8 @@
     <Content Include="Shaders\TgcSkeletalMeshPointLightShader.fx" />
     <Content Include="Shaders\TgcSkeletalMeshShader.fx" />
     <Content Include="Shaders\Varios.fx" />
+    <Content Include="Shaders\Waves2.fx" />
+    <Content Include="Shaders\WavesShader.fx" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
