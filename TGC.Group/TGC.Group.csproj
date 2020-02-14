@@ -91,7 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Camera\FpsCamera.cs" />
-    <Compile Include="Collision\CollisionManager.cs" />
     <Compile Include="Entities\GUI.cs" />
     <Compile Include="Entities\GUIItem.cs" />
     <Compile Include="Entities\HeightmapModel.cs" />
@@ -109,7 +108,9 @@
     </Compile>
     <Compile Include="Helpers\HeightmapHelper.cs" />
     <Compile Include="Helpers\TextureHelper.cs" />
+    <Compile Include="Model\CollectModel.cs" />
     <Compile Include="Model\HUDModel.cs" />
+    <Compile Include="Model\InventoryModel.cs" />
     <Compile Include="Model\ItemModel.cs" />
     <Compile Include="Model\Levels\Level1Model.cs" />
     <Compile Include="Model\Levels\LevelModel.cs" />

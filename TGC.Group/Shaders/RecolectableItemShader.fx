@@ -40,7 +40,7 @@ VS_OUTPUT vs_main(VS_INPUT Input)
 {
 	VS_OUTPUT Output;
 
-	Input.Position.y += cos(time) * amplitude;
+	//Input.Position.y += sin(time*30) * .3;
 
 	Output.Position = mul(Input.Position, matWorldViewProj);
 	Output.Normal = Input.Normal;

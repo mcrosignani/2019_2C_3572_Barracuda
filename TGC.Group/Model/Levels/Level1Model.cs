@@ -20,7 +20,6 @@ using TGC.Core.Terrain;
 using TGC.Core.Text;
 using TGC.Core.Textures;
 using TGC.Group.Camera;
-using TGC.Group.Collision;
 using TGC.Group.Entities;
 using TGC.Group.Helpers;
 using TGC.Group.Physics;
@@ -34,9 +33,10 @@ namespace TGC.Group.Model.Levels
         private string currentHeightmap;
         private float currentScaleXZ;
         private float currentScaleY;
+        TGCVector3 initialLookAt;
+        TGCVector3 initialPosition;
         //private Texture terrainTexture;
         private List<ItemModel> meshes;
-        private List<ItemModel> collectableMeshes;
         //private HeightmapModel hmModel;
         private TgcSkyBox skyBox;
         private TgcSkyBox skyBoxUndersea;
@@ -63,28 +63,35 @@ namespace TGC.Group.Model.Levels
         // Player
         PlayerModel playerModel;
 
+        // Collect
+        CollectModel collectModel;
+
         public Level1Model(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
             hudModel = new HUDModel(MediaDir, D3DDevice.Instance.Device);
+            
+            initialLookAt = new TGCVector3(6000, 4120f, 6600f);
+            initialPosition = new TGCVector3(6000, 4120f, 6600f);
+            
+            //Camara
+            Camera = new FpsCamera(initialLookAt, Input);
+
+            //Player
+            playerModel = new PlayerModel(surfacePosition.Y, initialPosition, gameModel, camera, input, mediaDir, shadersDir, frustum, drawText);
+
+            //Collect Model
+            collectModel = new CollectModel(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText);
         }
 
         public override void Init()
         {
             time = 0;
 
-            TGCVector3 initialLookAt = new TGCVector3(6000, 4120f, 6600f);
-            TGCVector3 initialPosition = new TGCVector3(6000, 4120f, 6600f);
-
-            //collisionManager = new CollisionManager(Input, lookAt, 0.1f);
-
-            //Camara
-            Camera = new FpsCamera(initialLookAt, Input);
-
-            //Player
-            playerModel = new PlayerModel(surfacePosition.Y, initialPosition);
-
             playerModel.Init();
+
+            collectModel.Init();
+            collectModel.Player = playerModel;
 
             //Skybox
             LoadSkyBox();
@@ -123,10 +130,9 @@ namespace TGC.Group.Model.Levels
 
         private void LoadCollectableMeshes()
         {
-            collectableMeshes = new List<ItemModel>();
-
             LoadMask();
             LoadFatherNote();
+            LoadHammer();
             LoadRope();
             LoadWood();
             LoadCopper();
@@ -152,11 +158,52 @@ namespace TGC.Group.Model.Levels
                 mesh.Effect = recoltableItemEffect;
                 mesh.Technique = "RecolectableItemTechnique";
 
-                mesh.Name = "mask_floor_" + i.ToString();
+                mesh.Name = "maskfloor_" + i.ToString();
                 i++;
 
-                collectableMeshes.Add(new ItemModel { Mesh = mesh, IsCollectable = true });
+                collectModel.CollisionMeshes.Add(new ItemModel { Mesh = mesh, IsCollectable = true, CollectablePosition = mesh.Position });
             }
+        }
+
+        private void LoadHammer()
+        {
+            string pathHammer = MediaDir + "\\Meshes\\hammer\\hammer-TgcScene.xml";
+
+            var loader = new TgcSceneLoader();
+            var originalMeshes = loader.loadSceneFromFile(pathHammer).Meshes;
+
+            int i = 0;
+            foreach (var mesh in originalMeshes)
+            {
+                var hammer = mesh.createMeshInstance($"hammer_{i++}");
+
+                var position = new TGCVector3(6643, 4105, 7041);
+                var scale = new TGCVector3(.5f, .5f, .5f);
+
+                hammer.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
+
+                hammer.Effect = recoltableItemEffect;
+                hammer.Technique = "RecolectableItemTechnique";
+
+                //hammer.createBoundingBox();
+
+                collectModel.CollisionMeshes.Add(new ItemModel { Mesh = hammer, IsCollectable = true, CollectablePosition = position });
+            }
+
+            //int i = 0;
+            //foreach (var mesh in originalMeshes)
+            //{
+            //    mesh.Position = new TGCVector3(6188, 4105, 6879);
+            //    mesh.Scale = new TGCVector3(1f, 1f, 1f);
+
+            //    mesh.Effect = recoltableItemEffect;
+            //    mesh.Technique = "RecolectableItemTechnique";
+
+            //    mesh.Name = "hammer_" + i.ToString();
+            //    i++;
+
+            //    collectModel.CollisionMeshes.Add(new ItemModel { Mesh = mesh, IsCollectable = true });
+            //}
         }
 
         private void LoadCopper()
@@ -166,7 +213,44 @@ namespace TGC.Group.Model.Levels
 
         private void LoadWood()
         {
-            
+            string pathWood = MediaDir + "\\Meshes\\recolectableWood\\recolectableWood-TgcScene.xml";
+
+            var loader = new TgcSceneLoader();
+            var originalMesh = loader.loadSceneFromFile(pathWood).Meshes[0];
+
+            var wood1 = originalMesh.createMeshInstance(originalMesh.Name + $"_wood1");
+
+            var position = new TGCVector3(5573, 4105, 7134);
+            var scale = new TGCVector3(2f, 1f, 2f);
+
+            wood1.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
+
+            wood1.Effect = recoltableItemEffect;
+            wood1.Technique = "RecolectableItemTechnique";
+
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood1, IsCollectable = true, CollectablePosition = position });
+
+            var wood2 = originalMesh.createMeshInstance(originalMesh.Name + $"_wood2");
+
+            position = new TGCVector3(2516, 50, 2472);
+
+            wood2.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
+
+            wood2.Effect = recoltableItemEffect;
+            wood2.Technique = "RecolectableItemTechnique";
+
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood2, IsCollectable = true, CollectablePosition = position });
+
+            var wood3 = originalMesh.createMeshInstance(originalMesh.Name + $"_wood3");
+
+            position = new TGCVector3(3461, 200, 3595);
+
+            wood3.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
+
+            wood3.Effect = recoltableItemEffect;
+            wood3.Technique = "RecolectableItemTechnique";
+
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood3, IsCollectable = true, CollectablePosition = position });
         }
 
         private void LoadRope()
@@ -176,32 +260,32 @@ namespace TGC.Group.Model.Levels
             var loader = new TgcSceneLoader();
             var originalMesh = loader.loadSceneFromFile(pathRope).Meshes[0];
 
-            var rope1 = originalMesh.createMeshInstance(originalMesh.Name + $"_rope1");
+            var rope1 = originalMesh.createMeshInstance($"rope1");
 
             var position = new TGCVector3(12000, 500, 12000);
             var scale = new TGCVector3(0.1f, 0.1f, 0.1f);
 
             rope1.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
 
-            collectableMeshes.Add(new ItemModel { Mesh = rope1 });
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = rope1, IsCollectable = true, CollectablePosition = position });
 
-            var rope2 = originalMesh.createMeshInstance(originalMesh.Name + $"_rope2");
+            var rope2 = originalMesh.createMeshInstance($"rope2");
 
             position = new TGCVector3(5886, 3000, 4000);
             scale = new TGCVector3(0.09f, 0.09f, 0.09f);
 
             rope2.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.RotationYawPitchRoll(-180, 30, 0) * TGCMatrix.Translation(position);
 
-            collectableMeshes.Add(new ItemModel { Mesh = rope2 });
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = rope2, IsCollectable = true, CollectablePosition = position });
 
-            var rope3 = originalMesh.createMeshInstance(originalMesh.Name + $"_rope3");
+            var rope3 = originalMesh.createMeshInstance($"rope3");
 
             position = new TGCVector3(1500, 60, 9886);
             scale = new TGCVector3(0.1f, 0.1f, 0.1f);
 
             rope3.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.RotationYawPitchRoll(0, -180, 0) * TGCMatrix.Translation(position);
 
-            collectableMeshes.Add(new ItemModel { Mesh = rope3 });
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = rope3, IsCollectable = true, CollectablePosition = position });
         }
 
         private void LoadShaders()
@@ -327,7 +411,7 @@ namespace TGC.Group.Model.Levels
 
             TgcPlane note = new TgcPlane(notePosition, noteSize, TgcPlane.Orientations.XYplane, noteTexture);
 
-            collectableMeshes.Add(new ItemModel { Mesh = note.toMesh("fatherNote") });
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = note.toMesh("fatherNote"), IsCollectable = true, CollectablePosition = notePosition });
         }
 
         private void LoadDeaths()
@@ -397,7 +481,7 @@ namespace TGC.Group.Model.Levels
 
         private void LoadBoat()
         {
-            string pathBoat = MediaDir + "\\Meshes\\boat\\boat-TgcScene.xml";
+            string pathBoat = MediaDir + "\\Meshes\\boat2\\boat2-TgcScene.xml";
 
             var loader = new TgcSceneLoader();
             var scene = loader.loadSceneFromFile(pathBoat);
@@ -542,18 +626,7 @@ namespace TGC.Group.Model.Levels
         {
             playerModel.Update(elapsedTime);
             bulletManager.Update(elapsedTime);
-
-            //skyBox.Center = playerModel.Position;
-
-            if (Input.keyPressed(Key.E))
-            {
-                playerModel.WithoutHelmet = false;
-
-                collectableMeshes
-                    .Where(item => item.Mesh.Name.Contains("mask_floor"))
-                    .ToList()
-                    .ForEach(item => item.Mesh.Enabled = false);
-            }
+            collectModel.Update(elapsedTime);
 
             effect.SetValue("withoutHelmet", playerModel.WithoutHelmet);
             effect.SetValue("inWater", playerModel.UnderSurface());
@@ -568,10 +641,7 @@ namespace TGC.Group.Model.Levels
             var pOldRT = device.GetRenderTarget(0);
             var pSurf = g_pRenderTarget.GetSurfaceLevel(0);
             device.SetRenderTarget(0, pSurf);
-            // hago lo mismo con el depthbuffer, necesito el que no tiene multisampling
             var pOldDS = device.DepthStencilSurface;
-            // Probar de comentar esta linea, para ver como se produce el fallo en el ztest
-            // por no soportar usualmente el multisampling en el render to texture.
             device.DepthStencilSurface = g_pDepthStencil;
 
             device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, Color.Black, 1.0f, 0);
@@ -581,10 +651,9 @@ namespace TGC.Group.Model.Levels
             wavesEffect.SetValue("time", time);
             recoltableItemEffect.SetValue("time", time);
 
-            //effect.Technique = "DefaultTechnique";
-
-            playerModel.Render();
+            
             bulletManager.Render();
+            collectModel.Render(elapsedTime);
 
             //Render SkyBox
             if (playerModel.UnderSurface())
@@ -595,30 +664,14 @@ namespace TGC.Group.Model.Levels
             {
                 skyBox.Render();
             }
-                        
-
-            //Render terrain
-            //D3DDevice.Instance.Device.SetTexture(0, terrainTexture);
-            //D3DDevice.Instance.Device.VertexFormat = CustomVertex.PositionTextured.Format;
-            //D3DDevice.Instance.Device.SetStreamSource(0, hmModel.Terrain, 0);
-            //D3DDevice.Instance.Device.DrawPrimitives(PrimitiveType.TriangleList, 0, hmModel.TotalVertex / 3);
-
+            
             underseaTerrain.Render();
 
             //Render Surface
             surfacePlane.Render();
 
-            //var currentPosition = collisionManager.update(elapsedTime, Input);
-            //collisionManager.Render();
-
             //Render Meshes
             foreach (var item in meshes)
-            {
-                item.Mesh.Render();
-            }
-
-            //Render Collectables
-            foreach (var item in collectableMeshes)
             {
                 item.Mesh.Render();
             }
@@ -642,6 +695,8 @@ namespace TGC.Group.Model.Levels
 
             hudModel.Render();
 
+            playerModel.Render(elapsedTime);
+
             DrawText.drawText(
                 $"Position Camera: {Camera.Position}", 5, 50,
                 Color.Yellow);
@@ -662,10 +717,10 @@ namespace TGC.Group.Model.Levels
             skyBoxUndersea.Dispose();
             surfacePlane.Dispose();
             underseaTerrain.Dispose();
+            collectModel.Dispose();
 
             //Dispose de Meshes
             meshes.ForEach(x => x.Dispose());
-            collectableMeshes.ForEach(x => x.Dispose());
         }
     }
 }

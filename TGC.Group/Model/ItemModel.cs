@@ -1,5 +1,6 @@
 ﻿using BulletSharp;
 using TGC.Core.SceneLoader;
+using TGC.Core.Mathematica;
 
 namespace TGC.Group.Model
 {
@@ -8,6 +9,7 @@ namespace TGC.Group.Model
         public TgcMesh Mesh { get; set; }
         public RigidBody RigidBody { get; set; }
         public bool IsCollectable { get; set; } = false;
+        public TGCVector3 CollectablePosition { get; set; }
 
         public ItemModel()
         { }

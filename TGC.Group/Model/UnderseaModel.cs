@@ -18,6 +18,7 @@ namespace TGC.Group.Model
         public override void Init()
         {
             currentModel = new MainMenuModel(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
+            //currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
 
             currentModel.Init();
 
