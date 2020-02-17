@@ -1,4 +1,7 @@
-﻿using System.Drawing;
+﻿using Microsoft.DirectX;
+using System.Drawing;
+using System.Windows.Forms;
+using TGC.Core.Direct3D;
 using TGC.Core.Example;
 using TGC.Group.Model.Levels;
 
@@ -17,8 +20,16 @@ namespace TGC.Group.Model
 
         public override void Init()
         {
-            currentModel = new MainMenuModel(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
-            //currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
+            D3DDevice.Instance.Device.Transform.Projection =
+               Matrix.PerspectiveFovLH(D3DDevice.Instance.FieldOfView,
+                   D3DDevice.Instance.AspectRatio,
+                   D3DDevice.Instance.ZNearPlaneDistance,
+                   D3DDevice.Instance.ZFarPlaneDistance * 2f);
+
+            Cursor.Hide();
+
+            //currentModel = new MainMenuModel(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
+            currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
 
             currentModel.Init();
 

@@ -50,6 +50,7 @@ namespace TGC.Group.Model.Levels
 
         private Effect wavesEffect;
         private Effect recoltableItemEffect;
+        private Effect fogEffect;
 
         //HUD
         HUDModel hudModel;
@@ -95,16 +96,16 @@ namespace TGC.Group.Model.Levels
 
             //Skybox
             LoadSkyBox();
-            LoadSkyBoxUndersea();
+            //LoadSkyBoxUndersea();
 
             //Heightmap
             currentHeightmap = MediaDir + "\\Level1\\Heigthmap\\" + "hm_level1.jpg";
             var currentTexture = MediaDir + "\\Level1\\Textures\\" + "level1.PNG";
-            currentScaleXZ = 50f;
+            currentScaleXZ = 150f;
             currentScaleY = 2f;
 
             underseaTerrain = new TgcSimpleTerrain();
-            underseaTerrain.loadHeightmap(currentHeightmap, currentScaleXZ, currentScaleY, new TGCVector3(129, 0, 129));
+            underseaTerrain.loadHeightmap(currentHeightmap, currentScaleXZ, currentScaleY, new TGCVector3(0, 0, 0));
             underseaTerrain.loadTexture(currentTexture);
             underseaTerrain.AlphaBlendEnable = true;
 
@@ -126,6 +127,8 @@ namespace TGC.Group.Model.Levels
 
             //Shaders
             LoadShaders();
+
+            fogEffect = TGCShaders.Instance.LoadEffect(ShadersDir + "TgcFogShader.fx");
         }
 
         private void LoadCollectableMeshes()
@@ -354,18 +357,19 @@ namespace TGC.Group.Model.Levels
 
         private void LoadSkyBox()
         {
+            var skyBoxSize = 80000 / 4;
             skyBox = new TgcSkyBox();
+            skyBox.Center = TGCVector3.Empty;
+            skyBox.Size = new TGCVector3(skyBoxSize, skyBoxSize, skyBoxSize);
 
-            skyBox.Center = new TGCVector3(3200, 3000, 3200);
-            skyBox.Size = new TGCVector3(12700, 7000, 12700);
+            var texturesPath = MediaDir + "Level1\\Textures\\SkyBox\\";
 
-            var texturesPath = MediaDir + "\\Level1\\Textures\\SkyBox\\";
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Up, texturesPath + "fup.PNG");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Down, texturesPath + "fd.PNG");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Left, texturesPath + "f2.PNG");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Right, texturesPath + "f4.PNG");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Front, texturesPath + "f1.PNG");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Back, texturesPath + "f3.PNG");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Up, texturesPath + "lostatseaday_up.jpg");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Down, texturesPath + "lostatseaday_dn.jpg");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Left, texturesPath + "lostatseaday_lf.jpg");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Right, texturesPath + "lostatseaday_rt.jpg");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Back, texturesPath + "lostatseaday_ft.jpg");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Front, texturesPath + "lostatseaday_bk.jpg");
             skyBox.SkyEpsilon = 25f;
             skyBox.Init();
         }
@@ -628,6 +632,8 @@ namespace TGC.Group.Model.Levels
             bulletManager.Update(elapsedTime);
             collectModel.Update(elapsedTime);
 
+            skyBox.Center = playerModel.Position;
+
             effect.SetValue("withoutHelmet", playerModel.WithoutHelmet);
             effect.SetValue("inWater", playerModel.UnderSurface());
         }
@@ -656,15 +662,39 @@ namespace TGC.Group.Model.Levels
             collectModel.Render(elapsedTime);
 
             //Render SkyBox
-            if (playerModel.UnderSurface())
+            //if (playerModel.UnderSurface())
+            //{
+            //    skyBoxUndersea.Render();
+            //}
+            //else
+            //{
+            //    skyBox.Render();
+            //}
+
+            fogEffect.SetValue("ColorFog", Color.SeaGreen.ToArgb());
+            fogEffect.SetValue("CameraPos", TGCVector3.Vector3ToFloat4Array(Camera.Position));
+            fogEffect.SetValue("StartFogDistance", 2000);
+            fogEffect.SetValue("EndFogDistance", 7000);
+            fogEffect.SetValue("Density", 0.0025f);
+            var heighmap = TgcTexture.createTexture(MediaDir + "Level1\\Textures\\perli2.jpg");
+            fogEffect.SetValue("texHeighmap", heighmap.D3dTexture);
+            fogEffect.SetValue("time", time);
+
+            fogEffect.SetValue("spotLightDir", TGCVector3.Vector3ToFloat3Array(new TGCVector3(0, -1f, 0)));
+
+            fogEffect.SetValue("spotLightAngleCos", FastMath.ToRad(55));
+
+            foreach (var mesh in skyBox.Faces)
             {
-                skyBoxUndersea.Render();
+                mesh.Effect = fogEffect;
+                mesh.Technique = "RenderScene";
+                //mesh.Render();
             }
-            else
-            {
-                skyBox.Render();
-            }
-            
+
+            skyBox.Render();
+
+            underseaTerrain.Effect = fogEffect;
+            underseaTerrain.Technique = "RenderScene2";
             underseaTerrain.Render();
 
             //Render Surface
@@ -673,6 +703,8 @@ namespace TGC.Group.Model.Levels
             //Render Meshes
             foreach (var item in meshes)
             {
+                item.Mesh.Effect = fogEffect;
+                item.Mesh.Technique = "RenderScene";
                 item.Mesh.Render();
             }
 
@@ -714,7 +746,7 @@ namespace TGC.Group.Model.Levels
             playerModel.Dispose();
             bulletManager.Dispose();
             skyBox.Dispose();
-            skyBoxUndersea.Dispose();
+            //skyBoxUndersea.Dispose();
             surfacePlane.Dispose();
             underseaTerrain.Dispose();
             collectModel.Dispose();
