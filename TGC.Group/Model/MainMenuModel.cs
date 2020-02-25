@@ -129,7 +129,7 @@ namespace TGC.Group.Model
         {
             gui.Dispose();
             backgroundSprite.Dispose();
-            text.render();
+            text.Dispose();
         }
     }
 }

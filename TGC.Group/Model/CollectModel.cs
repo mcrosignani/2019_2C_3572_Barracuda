@@ -10,6 +10,7 @@ using TGC.Core.Collision;
 using TGC.Core.Input;
 using TGC.Core.Mathematica;
 using TGC.Core.Text;
+using TGC.Group.Camera;
 using TGC.Group.Model.Levels;
 
 namespace TGC.Group.Model
@@ -20,9 +21,12 @@ namespace TGC.Group.Model
         private float leftrightRot;
         private float updownRot;
         private float rotationSpeed;
+        private FpsCamera internalCamera;
 
         public List<ItemModel> CollisionMeshes { get; set; }
         public PlayerModel Player { get; set; }
+        public TGCVector3 WorkbenchPosition { get; set; }
+        public TGCVector3 ShipHelmPosterPosition { get; set; }
 
         public CollectModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
@@ -32,6 +36,8 @@ namespace TGC.Group.Model
 
         public override void Init()
         {
+            internalCamera = Camera as FpsCamera;
+
             CollisionMeshes = new List<ItemModel>();
 
             collisionCylinder = new TgcBoundingCylinder(Camera.LookAt, 50f, 200f);
@@ -43,16 +49,29 @@ namespace TGC.Group.Model
 
         public override void Update(float elapsedTime)
         {
-            collisionCylinder.Center = Camera.LookAt;
-            collisionCylinder.move(Player.Position - Camera.LookAt);
-            leftrightRot -= -Input.XposRelative * rotationSpeed;
-            updownRot -= -Input.YposRelative * rotationSpeed;
-            collisionCylinder.Rotation = new TGCVector3(0, leftrightRot, updownRot);
-            collisionCylinder.updateValues();
+            if (internalCamera.LockCam)
+            {
+                collisionCylinder.Center = Camera.LookAt;
+                collisionCylinder.move(Player.Position - Camera.LookAt);
+                leftrightRot -= -Input.XposRelative * rotationSpeed;
+                updownRot -= -Input.YposRelative * rotationSpeed;
+                collisionCylinder.Rotation = new TGCVector3(0, leftrightRot, updownRot);
+                collisionCylinder.updateValues();
+            }
 
             if (Input.keyPressed(Key.E))
             {
                 DetectCollision();
+            }
+
+            if (Input.keyPressed(Key.C))
+            {
+                DetectWorkbenchCollisiion();
+            }
+
+            if (Player.InventoryModel.ShowShipHelm)
+            {
+                DetectShipHelmCollisiion();
             }
         }
 
@@ -93,10 +112,36 @@ namespace TGC.Group.Model
             }
         }
 
+        public void DetectWorkbenchCollisiion()
+        {
+            // Detect if the workbench its close
+            if (CollidesWithCylinder(new ItemModel { CollectablePosition = WorkbenchPosition }))
+            {
+                Player.CanShowCraft = true;
+            }
+            else
+            {
+                Player.CanShowCraft = false;
+            }
+        }
+
         private bool CollidesWithCylinder(ItemModel item)
         {
-            var collisionSphere = new TgcBoundingSphere(item.CollectablePosition, 5);
+            var collisionSphere = new TgcBoundingSphere(item.CollectablePosition, 20);
             return TgcCollisionUtils.testSphereCylinder(collisionSphere, collisionCylinder);
+        }
+
+        public void DetectShipHelmCollisiion()
+        {
+            // Detect if the workbench its close
+            if (CollidesWithCylinder(new ItemModel { CollectablePosition = ShipHelmPosterPosition }))
+            {
+                Player.CanUseShipHelm = true;
+            }
+            else
+            {
+                Player.CanUseShipHelm = false;
+            }
         }
     }
 }

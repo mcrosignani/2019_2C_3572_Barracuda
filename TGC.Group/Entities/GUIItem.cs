@@ -218,10 +218,21 @@ namespace TGC.Group.Entities
     // standard button
     public class gui_button : GUIItem
     {
+        private bool customColorSpecified = false;
+        private Color customColor;
+
         public gui_button(DXGui gui, string s, int id, int x, int y, int dx = 0, int dy = 0) :
             base(gui, s, x, y, dx, dy, id)
         {
             seleccionable = true;
+        }
+
+        public gui_button(DXGui gui, Color customColor, string s, int id, int x, int y, int dx = 0, int dy = 0) :
+            base(gui, s, x, y, dx, dy, id)
+        {
+            seleccionable = true;
+            this.customColor = customColor;
+            customColorSpecified = true;
         }
 
         public override void Render(DXGui gui)
@@ -234,7 +245,14 @@ namespace TGC.Group.Entities
             }
 
             // recuadro del boton
-            gui.RoundRect(rc.Left, rc.Top, rc.Right, rc.Bottom, 15, 3, DXGui.c_buttom_frame);
+            if (customColorSpecified)
+            {
+                gui.RoundRect(rc.Left, rc.Top, rc.Right, rc.Bottom, 15, 3, customColor);
+            }
+            else
+            {
+                gui.RoundRect(rc.Left, rc.Top, rc.Right, rc.Bottom, 15, 3, DXGui.c_buttom_frame);
+            }
 
             if (sel)
                 // boton seleccionado: lleno el interior
@@ -243,6 +261,12 @@ namespace TGC.Group.Entities
             // Texto del boton
             Rectangle rc2 = new Rectangle(rc.Left, rc.Top + 10, rc.Width, rc.Height - 20);
             Color color = sel ? DXGui.c_buttom_sel_text : DXGui.c_buttom_text;
+
+            if (customColorSpecified)
+            {
+                color = sel ? DXGui.c_buttom_sel_text : customColor;
+            }
+
             gui.font.DrawText(gui.sprite, text, rc, DrawTextFormat.VerticalCenter | DrawTextFormat.Center, color);
         }
     }

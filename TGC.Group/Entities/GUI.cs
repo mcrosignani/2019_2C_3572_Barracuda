@@ -787,6 +787,11 @@ namespace TGC.Group.Entities
             return (gui_button)InsertItem(new gui_button(this, s, id, x, y, dx, dy));
         }
 
+        public gui_button InsertButton(int id, string s, int x, int y, int dx, int dy, Color customColor)
+        {
+            return (gui_button)InsertItem(new gui_button(this, customColor, s, id, x, y, dx, dy));
+        }
+
         // button
         public gui_circle_button InsertCircleButton(int id, string s, string imagen, int x, int y, string mediaDir, int r)
         {

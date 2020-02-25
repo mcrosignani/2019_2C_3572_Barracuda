@@ -128,7 +128,7 @@ namespace TGC.Group.Camera
                 }
                 if (lockCam && !value)
                     Cursor.Show();
-                this.lockCam = value;
+                lockCam = value;
             }
         }
 

@@ -47,6 +47,8 @@ namespace TGC.Group.Model.Levels
         private Surface g_pDepthStencil;
         private Texture g_pRenderTarget;
         private VertexBuffer g_pVBV3D;
+        private List<TgcMesh> shipHelmMesh;
+        private TgcPlane shipHelmPoster;
 
         private Effect wavesEffect;
         private Effect recoltableItemEffect;
@@ -67,6 +69,9 @@ namespace TGC.Group.Model.Levels
         // Collect
         CollectModel collectModel;
 
+        // History
+        HistoryModel historyModel;
+
         public Level1Model(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
@@ -79,10 +84,13 @@ namespace TGC.Group.Model.Levels
             Camera = new FpsCamera(initialLookAt, Input);
 
             //Player
-            playerModel = new PlayerModel(surfacePosition.Y, initialPosition, gameModel, camera, input, mediaDir, shadersDir, frustum, drawText);
+            playerModel = new PlayerModel(surfacePosition.Y, initialPosition, gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText);
 
             //Collect Model
-            collectModel = new CollectModel(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText);
+            collectModel = new CollectModel(gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText);
+
+            // History Model
+            historyModel = new HistoryModel(gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText);
         }
 
         public override void Init()
@@ -93,6 +101,8 @@ namespace TGC.Group.Model.Levels
 
             collectModel.Init();
             collectModel.Player = playerModel;
+
+            historyModel.Init();
 
             //Skybox
             LoadSkyBox();
@@ -129,6 +139,23 @@ namespace TGC.Group.Model.Levels
             LoadShaders();
 
             fogEffect = TGCShaders.Instance.LoadEffect(ShadersDir + "TgcFogShader.fx");
+
+            OnlyForDebug();
+        }
+
+        private void OnlyForDebug()
+        {
+            var woodItem = collectModel.CollisionMeshes.FirstOrDefault(x => x.Mesh.Name.Contains("wood"));
+            for (int i = 0; i < 3; i++)
+            {
+                playerModel.InventoryModel.AddItem(woodItem);
+            }
+
+            var ropeItem = collectModel.CollisionMeshes.FirstOrDefault(x => x.Mesh.Name.Contains("rope"));
+            playerModel.InventoryModel.AddItem(ropeItem);
+
+            var hammerItem = collectModel.CollisionMeshes.FirstOrDefault(x => x.Mesh.Name.Contains("hammer"));
+            playerModel.InventoryModel.AddItem(hammerItem);
         }
 
         private void LoadCollectableMeshes()
@@ -221,39 +248,60 @@ namespace TGC.Group.Model.Levels
             var loader = new TgcSceneLoader();
             var originalMesh = loader.loadSceneFromFile(pathWood).Meshes[0];
 
-            var wood1 = originalMesh.createMeshInstance(originalMesh.Name + $"_wood1");
-
             var position = new TGCVector3(5573, 4105, 7134);
             var scale = new TGCVector3(2f, 1f, 2f);
-
-            wood1.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
-
-            wood1.Effect = recoltableItemEffect;
-            wood1.Technique = "RecolectableItemTechnique";
-
+            var wood1 = CreateMeshInstance(originalMesh, position, scale, "_wood1");
             collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood1, IsCollectable = true, CollectablePosition = position });
 
-            var wood2 = originalMesh.createMeshInstance(originalMesh.Name + $"_wood2");
-
             position = new TGCVector3(2516, 50, 2472);
-
-            wood2.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
-
-            wood2.Effect = recoltableItemEffect;
-            wood2.Technique = "RecolectableItemTechnique";
-
+            var wood2 = CreateMeshInstance(originalMesh, position, scale, "_wood2");
             collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood2, IsCollectable = true, CollectablePosition = position });
 
-            var wood3 = originalMesh.createMeshInstance(originalMesh.Name + $"_wood3");
-
             position = new TGCVector3(3461, 200, 3595);
-
-            wood3.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
-
-            wood3.Effect = recoltableItemEffect;
-            wood3.Technique = "RecolectableItemTechnique";
-
+            var wood3 = CreateMeshInstance(originalMesh, position, scale, "_wood3");
             collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood3, IsCollectable = true, CollectablePosition = position });
+
+            var rnd = new Random();
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood4 = CreateMeshInstance(originalMesh, position, scale, "_wood4");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood4, IsCollectable = true, CollectablePosition = position });
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood5 = CreateMeshInstance(originalMesh, position, scale, "_wood5");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood5, IsCollectable = true, CollectablePosition = position });
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood6 = CreateMeshInstance(originalMesh, position, scale, "_wood6");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood6, IsCollectable = true, CollectablePosition = position });
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood7 = CreateMeshInstance(originalMesh, position, scale, "_wood7");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood7, IsCollectable = true, CollectablePosition = position });
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood8 = CreateMeshInstance(originalMesh, position, scale, "_wood8");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood8, IsCollectable = true, CollectablePosition = position });
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood9 = CreateMeshInstance(originalMesh, position, scale, "_wood9");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood9, IsCollectable = true, CollectablePosition = position });
+
+            position = new TGCVector3((float)(12000 * rnd.NextDouble()), (float)(4000 * rnd.NextDouble()), (float)(12000 * rnd.NextDouble()));
+            var wood10 = CreateMeshInstance(originalMesh, position, scale, "_wood10");
+            collectModel.CollisionMeshes.Add(new ItemModel { Mesh = wood10, IsCollectable = true, CollectablePosition = position });
+        }
+
+        private TgcMesh CreateMeshInstance(TgcMesh originalMesh, TGCVector3 position, TGCVector3 scale, string name)
+        {
+            var instance = originalMesh.createMeshInstance(originalMesh.Name + name);
+
+            instance.Transform = TGCMatrix.Scaling(scale) * TGCMatrix.Translation(position);
+
+            instance.Effect = recoltableItemEffect;
+            instance.Technique = "RecolectableItemTechnique";
+
+            return instance;
         }
 
         private void LoadRope()
@@ -364,12 +412,12 @@ namespace TGC.Group.Model.Levels
 
             var texturesPath = MediaDir + "Level1\\Textures\\SkyBox\\";
 
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Up, texturesPath + "lostatseaday_up.jpg");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Down, texturesPath + "lostatseaday_dn.jpg");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Left, texturesPath + "lostatseaday_lf.jpg");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Right, texturesPath + "lostatseaday_rt.jpg");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Back, texturesPath + "lostatseaday_ft.jpg");
-            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Front, texturesPath + "lostatseaday_bk.jpg");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Up, texturesPath + "cave3_up.png");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Down, texturesPath + "cave3_dn.png");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Left, texturesPath + "cave3_lf.png");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Right, texturesPath + "cave3_rt.png");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Back, texturesPath + "cave3_ft.png");
+            skyBox.setFaceTexture(TgcSkyBox.SkyFaces.Front, texturesPath + "cave3_bk.png");
             skyBox.SkyEpsilon = 25f;
             skyBox.Init();
         }
@@ -404,6 +452,43 @@ namespace TGC.Group.Model.Levels
             LoadShip();
             LoadWorkbench();
             LoadDeaths();
+            LoadShipHelm();
+            LoadShipHelmPoster();
+        }
+
+        private void LoadShipHelm()
+        {
+            shipHelmMesh = new List<TgcMesh>();
+
+            string pathShipHelm = MediaDir + "\\Meshes\\timon\\Timon-TgcScene.xml";
+
+            var loader = new TgcSceneLoader();
+            var scene = loader.loadSceneFromFile(pathShipHelm);
+
+            var position = new TGCVector3(5500, 4060, 6860);
+            var scale = new TGCVector3(0.2f, 0.2f, 0.2f);
+            var rotation = new TGCVector3(0, 4.71f, 0);
+
+            foreach (var mesh in scene.Meshes)
+            {
+                mesh.Position = position;
+                mesh.Scale = scale;
+                mesh.Rotation = rotation;
+
+                shipHelmMesh.Add(mesh);
+            }
+        }
+
+        private void LoadShipHelmPoster()
+        {
+            var posterTexture = TgcTexture.createTexture(D3DDevice.Instance.Device, MediaDir + "\\Bitmaps\\" + "shipHelmPoster.png");
+
+            var posterPosition = new TGCVector3(5984, 4200, 6836);
+            var posterSize = new TGCVector3(120, 70, 120);
+
+            shipHelmPoster = new TgcPlane(posterPosition, posterSize, TgcPlane.Orientations.YZplane, posterTexture);
+
+            collectModel.ShipHelmPosterPosition = new TGCVector3(6114, 4060, 6887);
         }
 
         private void LoadFatherNote()
@@ -481,6 +566,8 @@ namespace TGC.Group.Model.Levels
             item.RigidBody = bulletManager.AddRigidBody(originalMesh, position, scale);
 
             meshes.Add(item);
+
+            collectModel.WorkbenchPosition = position;
         }
 
         private void LoadBoat()
@@ -628,9 +715,9 @@ namespace TGC.Group.Model.Levels
 
         public override void Update(float elapsedTime)
         {
-            playerModel.Update(elapsedTime);
             bulletManager.Update(elapsedTime);
             collectModel.Update(elapsedTime);
+            playerModel.Update(elapsedTime);
 
             skyBox.Center = playerModel.Position;
 
@@ -671,7 +758,7 @@ namespace TGC.Group.Model.Levels
             //    skyBox.Render();
             //}
 
-            fogEffect.SetValue("ColorFog", Color.SeaGreen.ToArgb());
+            fogEffect.SetValue("ColorFog", 2304311);
             fogEffect.SetValue("CameraPos", TGCVector3.Vector3ToFloat4Array(Camera.Position));
             fogEffect.SetValue("StartFogDistance", 2000);
             fogEffect.SetValue("EndFogDistance", 7000);
@@ -706,6 +793,25 @@ namespace TGC.Group.Model.Levels
                 item.Mesh.Effect = fogEffect;
                 item.Mesh.Technique = "RenderScene";
                 item.Mesh.Render();
+            }
+
+            if (playerModel.InventoryModel.RenderShipHelm)
+            {
+                foreach (var item in shipHelmMesh)
+                {
+                    item.Render();
+                }
+            }
+
+            if (playerModel.InventoryModel.ShowShipHelm)
+            {
+                shipHelmPoster.Render();
+            }
+
+            playerModel.ShowHistory = historyModel.ShowHistory;
+            if (historyModel.ShowHistory)
+            {
+                historyModel.Render(elapsedTime);
             }
 
             // restuaro el render target y el stencil
@@ -750,9 +856,14 @@ namespace TGC.Group.Model.Levels
             surfacePlane.Dispose();
             underseaTerrain.Dispose();
             collectModel.Dispose();
+            shipHelmPoster.Dispose();
 
             //Dispose de Meshes
             meshes.ForEach(x => x.Dispose());
+
+            shipHelmMesh.ForEach(x => x.Dispose());
+
+            historyModel.Dispose();
         }
     }
 }

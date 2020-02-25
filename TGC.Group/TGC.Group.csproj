@@ -66,6 +66,7 @@
     <Reference Include="BulletSharp, Version=0.11.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BulletSharp.0.11.1\lib\net40-client\BulletSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.dll</HintPath>
@@ -109,6 +110,9 @@
     <Compile Include="Helpers\HeightmapHelper.cs" />
     <Compile Include="Helpers\TextureHelper.cs" />
     <Compile Include="Model\CollectModel.cs" />
+    <Compile Include="Model\CraftModel.cs" />
+    <Compile Include="Model\FatherNoteModel.cs" />
+    <Compile Include="Model\HistoryModel.cs" />
     <Compile Include="Model\HUDModel.cs" />
     <Compile Include="Model\InventoryModel.cs" />
     <Compile Include="Model\ItemModel.cs" />
@@ -178,12 +182,33 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Media\Bitmaps\close.png" />
+    <Content Include="Media\Bitmaps\hammer.jpg" />
+    <Content Include="Media\Bitmaps\hammer2.png" />
+    <Content Include="Media\Bitmaps\history.PNG" />
+    <Content Include="Media\Bitmaps\main1.jpg" />
+    <Content Include="Media\Bitmaps\main3.jpg" />
+    <Content Include="Media\Bitmaps\note.png" />
+    <Content Include="Media\Bitmaps\noteView.PNG" />
+    <Content Include="Media\Bitmaps\rope.jpg" />
+    <Content Include="Media\Bitmaps\rope.png" />
+    <Content Include="Media\Bitmaps\shipHelmPoster.png" />
+    <Content Include="Media\Bitmaps\timon.jpg" />
+    <Content Include="Media\Bitmaps\wood.png" />
+    <Content Include="Media\Bitmaps\wood2.png" />
+    <Content Include="Media\Images\hammer.jpg" />
+    <Content Include="Media\Images\hammer2.png" />
+    <Content Include="Media\Images\rope.jpg" />
+    <Content Include="Media\Images\rope.png" />
+    <Content Include="Media\Images\wood.png" />
     <Content Include="Media\Level1\Heigthmap\heighmapmar2.jpg" />
     <Content Include="Media\Level1\Heigthmap\hm_level1.jpg" />
     <Content Include="Media\Level1\Textures\healthBar.png" />
     <Content Include="Media\Level1\Textures\mask.png" />
+    <Content Include="Media\Level1\Textures\mask_original.png" />
     <Content Include="Media\Level1\Textures\noteTexture.png" />
     <Content Include="Media\Level1\Textures\oxygenBar.png" />
+    <Content Include="Media\Level1\Textures\perli2.jpg" />
     <Content Include="Media\Level1\Textures\surface.PNG" />
     <Content Include="Media\Level1\Textures\tomasFace.png" />
     <Content Include="Media\Meshes\arbusto\Arbusto-TgcScene.xml" />
@@ -223,6 +248,12 @@
     <Content Include="Media\Meshes\esqueletohumano\Textures\skeleton.png" />
     <Content Include="Media\Meshes\fish\fish-TgcScene.xml" />
     <Content Include="Media\Meshes\fish\Textures\blue_fish.jpg" />
+    <Content Include="Media\Meshes\hammer\hammer-TgcScene.xml" />
+    <Content Include="Media\Meshes\hammer\Textures\mangoMartillo.png" />
+    <Content Include="Media\Meshes\hammer\Textures\martillo2.jpg" />
+    <Content Include="Media\Meshes\mask\mask_floor-TgcScene.xml" />
+    <Content Include="Media\Meshes\mask\Textures\mask_3_floor.png" />
+    <Content Include="Media\Meshes\mask\Textures\mask_floor.png" />
     <Content Include="Media\Meshes\pillar_coral\pillar_coral-TgcScene.xml" />
     <Content Include="Media\Meshes\pillar_coral\Textures\10010_Coral_v1_Diffuse.jpg" />
     <Content Include="Media\Meshes\pillar_coral\Textures\12960_Shark_diff_v2.jpg" />
@@ -245,10 +276,8 @@
     <Content Include="Media\Meshes\pillar_coral\Textures\shell_basecolour.jpg" />
     <Content Include="Media\Meshes\pillar_coral\Textures\shell_roughness.png" />
     <Content Include="Media\Level1\Textures\level1.PNG" />
-    <Content Include="Media\Level1\Textures\SkyBox\left.PNG" />
-    <Content Include="Media\Level1\Textures\SkyBox\others.PNG" />
-    <Content Include="Media\Level1\Textures\SkyBox\right.PNG" />
-    <Content Include="Media\Level1\Textures\SkyBox\up.PNG" />
+    <Content Include="Media\Meshes\recolectableWood\recolectableWood-TgcScene.xml" />
+    <Content Include="Media\Meshes\recolectableWood\Textures\brokenWood.jpg" />
     <Content Include="Media\Meshes\rock\preview.jpg" />
     <Content Include="Media\Meshes\rock\Roca-TgcScene.xml" />
     <Content Include="Media\Meshes\rock\Textures\Piedra3.jpg" />
@@ -301,7 +330,9 @@
     <Content Include="Shaders\Waves2.fx" />
     <Content Include="Shaders\WavesShader.fx" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Media\Level1\Textures\SkyBox\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
