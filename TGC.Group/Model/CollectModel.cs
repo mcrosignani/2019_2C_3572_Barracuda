@@ -9,6 +9,7 @@ using TGC.Core.Camara;
 using TGC.Core.Collision;
 using TGC.Core.Input;
 using TGC.Core.Mathematica;
+using TGC.Core.Sound;
 using TGC.Core.Text;
 using TGC.Group.Camera;
 using TGC.Group.Model.Levels;
@@ -22,16 +23,19 @@ namespace TGC.Group.Model
         private float updownRot;
         private float rotationSpeed;
         private FpsCamera internalCamera;
+        private TgcStaticSound pickUpSound = new TgcStaticSound();
+        private TgcDirectSound DirectSound;
 
         public List<ItemModel> CollisionMeshes { get; set; }
         public PlayerModel Player { get; set; }
         public TGCVector3 WorkbenchPosition { get; set; }
         public TGCVector3 ShipHelmPosterPosition { get; set; }
 
-        public CollectModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
+        public CollectModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText, TgcDirectSound directSound)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
             rotationSpeed = 0.1f;
+            DirectSound = directSound;
         }
 
         public override void Init()
@@ -45,6 +49,8 @@ namespace TGC.Group.Model
             collisionCylinder.rotateZ(updownRot);
             collisionCylinder.setRenderColor(Color.LimeGreen);
             collisionCylinder.updateValues();
+
+            pickUpSound.loadSound(MediaDir + "\\Sounds\\pickUpItem.wav", DirectSound.DsDevice);
         }
 
         public override void Update(float elapsedTime)
@@ -100,6 +106,8 @@ namespace TGC.Group.Model
 
                 foreach (var collectedItem in collidesItems)
                 {
+                    PlayPickUpSound();
+
                     Player.InventoryModel.AddItem(collectedItem);
 
                     if (collectedItem.Mesh.Name.Contains("mask"))
@@ -142,6 +150,11 @@ namespace TGC.Group.Model
             {
                 Player.CanUseShipHelm = false;
             }
+        }
+
+        private void PlayPickUpSound()
+        {
+            pickUpSound.play();
         }
     }
 }

@@ -28,8 +28,8 @@ namespace TGC.Group.Model
 
             Cursor.Hide();
 
-            //currentModel = new MainMenuModel(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
-            currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
+            currentModel = new MainMenuModel(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText, DirectSound);
+            //currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText, DirectSound);
 
             currentModel.Init();
 
@@ -63,7 +63,7 @@ namespace TGC.Group.Model
 
         public void ChangeLevel()
         {
-            currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText);
+            currentModel = new Level1Model(this, Camara, Input, MediaDir, ShadersDir, Frustum, DrawText, DirectSound);
 
             currentModel.Init();
 

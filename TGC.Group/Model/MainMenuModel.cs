@@ -5,6 +5,7 @@ using TGC.Core.Camara;
 using TGC.Core.Direct3D;
 using TGC.Core.Input;
 using TGC.Core.Mathematica;
+using TGC.Core.Sound;
 using TGC.Core.Text;
 using TGC.Group.Entities;
 using TGC.Group.Model.Levels;
@@ -20,6 +21,8 @@ namespace TGC.Group.Model
         private Drawer2D drawer2D;
         private CustomSprite backgroundSprite;
         private TgcText2D text;
+        private TgcMp3Player music;
+        private TgcDirectSound DirectSound;
 
         public const int IDOK = 0;
         public const int IDCANCEL = 1;
@@ -27,9 +30,10 @@ namespace TGC.Group.Model
         public const int ID_CONTROLES = 103;
         public const int ID_APP_EXIT = 105;
 
-        public MainMenuModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
+        public MainMenuModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText, TgcDirectSound directSound)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
+            DirectSound = directSound;
         }
 
         public override void Init()
@@ -68,6 +72,10 @@ namespace TGC.Group.Model
             gui.InsertMenuItem(ID_NUEVA_PARTIDA, "  Jugar", "play.png", x0, y0, MediaDir, dx, dy);
             gui.InsertMenuItem(ID_CONTROLES, "  Controles", "navegar.png", x0, y0 += dy2, MediaDir, dx, dy);
             gui.InsertMenuItem(ID_APP_EXIT, "  Salir", "salir.png", x0, y0 += dy2, MediaDir, dx, dy);
+
+            music = new TgcMp3Player();
+            music.FileName = MediaDir + "\\Sounds\\mainMenuMusic.mp3";
+            music.play(true);
         }
 
         public override void Update(float elapsedTime)
@@ -92,11 +100,11 @@ namespace TGC.Group.Model
                         case IDOK:
                             if (msg_box_app_exit)
                             {
-
                                 Application.Exit();
                             }
                             if (msg_box_nueva_mision)
                             {
+                                music.closeFile();
                                 GameModel.ChangeLevel();
                             }
                             break;

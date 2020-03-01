@@ -16,6 +16,7 @@ using TGC.Core.Input;
 using TGC.Core.Mathematica;
 using TGC.Core.SceneLoader;
 using TGC.Core.Shaders;
+using TGC.Core.Sound;
 using TGC.Core.Terrain;
 using TGC.Core.Text;
 using TGC.Core.Textures;
@@ -54,6 +55,8 @@ namespace TGC.Group.Model.Levels
         private Effect recoltableItemEffect;
         private Effect fogEffect;
 
+        private TgcMp3Player music;
+
         //HUD
         HUDModel hudModel;
 
@@ -72,7 +75,10 @@ namespace TGC.Group.Model.Levels
         // History
         HistoryModel historyModel;
 
-        public Level1Model(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
+        // You Win
+        YouWinModel youWinModel;
+
+        public Level1Model(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText, TgcDirectSound directSound)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
             hudModel = new HUDModel(MediaDir, D3DDevice.Instance.Device);
@@ -84,13 +90,16 @@ namespace TGC.Group.Model.Levels
             Camera = new FpsCamera(initialLookAt, Input);
 
             //Player
-            playerModel = new PlayerModel(surfacePosition.Y, initialPosition, gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText);
+            playerModel = new PlayerModel(surfacePosition.Y, initialPosition, gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText, directSound);
 
             //Collect Model
-            collectModel = new CollectModel(gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText);
+            collectModel = new CollectModel(gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText, directSound);
 
             // History Model
             historyModel = new HistoryModel(gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText);
+
+            // You Win Model
+            youWinModel = new YouWinModel(gameModel, Camera, input, mediaDir, shadersDir, frustum, drawText, directSound);
         }
 
         public override void Init()
@@ -103,6 +112,8 @@ namespace TGC.Group.Model.Levels
             collectModel.Player = playerModel;
 
             historyModel.Init();
+
+            youWinModel.Init();
 
             //Skybox
             LoadSkyBox();
@@ -140,7 +151,11 @@ namespace TGC.Group.Model.Levels
 
             fogEffect = TGCShaders.Instance.LoadEffect(ShadersDir + "TgcFogShader.fx");
 
-            OnlyForDebug();
+            //OnlyForDebug();
+
+            music = new TgcMp3Player();
+            music.FileName = MediaDir + "\\Sounds\\rain.mp3";
+            music.play(true);
         }
 
         private void OnlyForDebug()
@@ -814,6 +829,11 @@ namespace TGC.Group.Model.Levels
                 historyModel.Render(elapsedTime);
             }
 
+            if (playerModel.Win)
+            {
+                youWinModel.Render(elapsedTime);
+            }
+
             // restuaro el render target y el stencil
             device.DepthStencilSurface = pOldDS;
             device.SetRenderTarget(0, pOldRT);
@@ -834,14 +854,6 @@ namespace TGC.Group.Model.Levels
             hudModel.Render();
 
             playerModel.Render(elapsedTime);
-
-            DrawText.drawText(
-                $"Position Camera: {Camera.Position}", 5, 50,
-                Color.Yellow);
-
-            DrawText.drawText(
-                $"Position Rigid Body: {bulletManager.RigidCamera.CenterOfMassPosition}", 5, 100,
-                Color.Red);
         }
 
         public override void Dispose()
@@ -864,6 +876,8 @@ namespace TGC.Group.Model.Levels
             shipHelmMesh.ForEach(x => x.Dispose());
 
             historyModel.Dispose();
+
+            music.closeFile();
         }
     }
 }

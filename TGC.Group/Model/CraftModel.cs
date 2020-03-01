@@ -8,6 +8,7 @@ using TGC.Core.BoundingVolumes;
 using TGC.Core.Camara;
 using TGC.Core.Direct3D;
 using TGC.Core.Input;
+using TGC.Core.Sound;
 using TGC.Core.Text;
 using TGC.Group.Entities;
 using TGC.Group.Model.Levels;
@@ -26,15 +27,17 @@ namespace TGC.Group.Model
         private GUIItem shipHelmGuiItem;
         private GUIItem shipHelmGuiItemText;
         private gui_button shipHelmGuiItemButton;
+        private TgcStaticSound craftSound = new TgcStaticSound();
+        private TgcDirectSound DirectSound;
 
         private const int ID_CRAFT_SHIP_HELM = 1;
 
         public PlayerModel PlayerModel { get; set; }
 
-        public CraftModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
+        public CraftModel(UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText, TgcDirectSound directSound)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
-            
+            DirectSound = directSound;
         }
 
         public override void Init()
@@ -52,6 +55,8 @@ namespace TGC.Group.Model
             gui.InitDialog(false, false);
 
             CreateInterface();
+
+            craftSound.loadSound(MediaDir + "\\Sounds\\craft.wav", DirectSound.DsDevice);
         }
 
         private void CreateInterface()
@@ -173,6 +178,8 @@ namespace TGC.Group.Model
             }
             else
             {
+                PlayCraftSound();
+
                 showCraftElemMsg = true;
                 msgTime = 0;
 
@@ -182,6 +189,11 @@ namespace TGC.Group.Model
                 gui.Reset();
                 DrawIFrame();
             }
+        }
+
+        private void PlayCraftSound()
+        {
+            craftSound.play();
         }
     }
 }

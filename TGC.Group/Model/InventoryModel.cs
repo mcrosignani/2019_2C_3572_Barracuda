@@ -102,6 +102,7 @@ namespace TGC.Group.Model
                                 PlayerModel.ShowInventory = false;
                                 ShowShipHelm = false;
                                 RenderShipHelm = true;
+                                PlayerModel.Win = true;
                             }
                             else
                             {

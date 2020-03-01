@@ -8,6 +8,7 @@ using TGC.Core.BoundingVolumes;
 using TGC.Core.Camara;
 using TGC.Core.Input;
 using TGC.Core.Mathematica;
+using TGC.Core.Sound;
 using TGC.Core.Text;
 using TGC.Group.Camera;
 using TGC.Group.Model.Levels;
@@ -30,8 +31,9 @@ namespace TGC.Group.Model
         public bool CanShowCraft { get; set; }
         public bool CanUseShipHelm { get; set; }
         public bool ShowHistory { get; set; }
+        public bool Win { get; set; }
 
-        public PlayerModel(float surfacePosition, TGCVector3 initialPosition, UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText)
+        public PlayerModel(float surfacePosition, TGCVector3 initialPosition, UnderseaModel gameModel, TgcCamera camera, TgcD3dInput input, string mediaDir, string shadersDir, TgcFrustum frustum, TgcText2D drawText, TgcDirectSound directSound)
             : base(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText)
         {
             surfaceYPosition = surfacePosition;
@@ -41,7 +43,7 @@ namespace TGC.Group.Model
             InventoryModel.PlayerModel = this;
             fatherNoteModel = new FatherNoteModel(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText);
             fatherNoteModel.PlayerModel = this;
-            craftModel = new CraftModel(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText);
+            craftModel = new CraftModel(gameModel, camera, input, mediaDir, shadersDir, frustum, drawText, directSound);
             craftModel.PlayerModel = this;
         }
 
@@ -55,6 +57,7 @@ namespace TGC.Group.Model
             CanShowCraft = false;
             CanUseShipHelm = false;
             ShowHistory = true;
+            Win = false;
 
             InventoryModel.Init();
             fatherNoteModel.Init();
@@ -80,7 +83,7 @@ namespace TGC.Group.Model
                 InventoryModel.Update(elapsedTime);
             }
 
-            if (ShowInventory || ShowFatherNote || ShowCraft || ShowHistory)
+            if (ShowInventory || ShowFatherNote || ShowCraft || ShowHistory || Win)
             {
                 internalCamera.LockCam = false;
             }
